@@ -1,0 +1,34 @@
+- name: create roboshop system user                # Task description: Create a dedicated system user for the app
+  ansible.builtin.user:                            # Use Ansible's user module
+    name: roboshop                                 # Username to create
+    comment: RoboShop System user                  # Comment field describing the user
+    system: true                                   # Create as a system user (UID < 1000, no login by default)
+    shell: /sbin/nologin                           # Disable shell login for this user
+    home: /app                                     # Set the home directory to /app
+
+# Safe to remove directory, because 2nd time if we run it will download freshly. no error if does not exist
+- name: remove app directory                        # Task: Remove /app if it already exists
+  ansible.builtin.file:                             # Use file module for managing files/directories
+    path: /app                                     # Target directory path
+    state: absent                                  # Remove the directory if it exists
+
+- name: create app directory                        # Task: Create a fresh /app directory
+  ansible.builtin.file:                             # Use file module
+    state: directory                               # Ensure it's a directory
+    path: /app                                     # Directory path
+
+- name: Delete {{ component }} file                 # Task: Remove any existing downloaded zip for this component
+  ansible.builtin.file:                             # Use file module
+    path: /tmp/{{ component }}.zip                 # Target file path
+    state: absent                                  # Delete the file if it exists
+
+- name: download {{ component }} application       # Task: Download application zip from S3
+  ansible.builtin.get_url:                          # Use get_url module to download files from URL
+    url: https://roboshop-artifacts.s3.amazonaws.com/{{ component }}-v3.zip   # URL of the zip file
+    dest: /tmp/{{ component }}.zip                 # Destination path on the target server
+
+- name: extract {{ component }} application        # Task: Extract the downloaded zip into /app
+  ansible.builtin.unarchive:                        # Use unarchive module
+    src: /tmp/{{ component }}.zip                  # Source zip file
+    dest: /app                                     # Destination directory
+    remote_src: yes                                # Indicates the zip file already exists on the remote host (don’t try to fetch from controller)

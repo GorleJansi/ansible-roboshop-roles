@@ -1,0 +1,18 @@
+- name: disable default nodejs                  # Task description: Disable the default NodeJS module provided by the OS
+  ansible.builtin.command:                     # Use the 'command' module to run a shell command
+    dnf module disable nodejs -y               # Command to disable the default NodeJS module using DNF package manager
+
+- name: enable nodejs 20                        # Task description: Enable NodeJS version 20 module
+  ansible.builtin.command:                     # Run shell command
+    dnf module enable nodejs:20 -y            # Enable NodeJS version 20 module so we can install the correct version
+
+- name: install nodejs                           # Task description: Install NodeJS package
+  ansible.builtin.package:                      # Use package manager module (works with yum/dnf/apt)
+    name: nodejs                                # Name of the package to install
+    state: present                              # Ensure NodeJS is installed (if already installed, nothing happens)
+
+- name: install dependencies                     # Task description: Install NodeJS project dependencies from package.json
+  community.general.npm:                        # Use the npm module from Ansible Galaxy's community.general collection
+    path: /app                                  # Path to the project directory where package.json is located
+  tags:
+  - deployment                                  # Tag this task as 'deployment' for selective execution

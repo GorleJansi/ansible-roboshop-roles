@@ -1,0 +1,11 @@
+- name: copy {{ component }} service             # Task description: copy the systemd service file for the component
+  ansible.builtin.template:                       # Use the 'template' module to process a Jinja2 template
+    src: "{{ component }}.service.j2"            # Source template file on the control node (e.g., nodejs.service.j2)
+    dest: "/etc/systemd/system/{{ component }}.service"  # Destination path on the target host for the service file
+  notify: daemon reload                           # Notify a handler named 'daemon reload' to reload systemd if this task changes the file
+
+- name: start the service                         # Task description: start and enable the service
+  ansible.builtin.service:                        # Use the 'service' module to manage system services
+    name: "{{ component }}"                        # Name of the service to manage (e.g., nodejs)
+    state: restarted                               # Ensure the service is restarted (if running, stop and start again)
+    enabled: yes                                   # Ensure the service starts automatically on boot

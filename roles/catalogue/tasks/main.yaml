@@ -1,0 +1,41 @@
+- name: app setup
+  ansible.builtin.import_role:               # Import a role's tasks statically (evaluated at playbook parse time)
+    name: common                             # Role name to import
+    tasks_from: app-setup.yaml               # Use only tasks from this specific file inside the role
+  tags:
+  - deployment                               # Tag this task as 'deployment' for selective execution
+
+- name: app setup
+  # ansible.builtin.import_role:            # (Commented out) would import role statically
+  ansible.builtin.include_role:              # Include a role dynamically (evaluated at runtime)
+    name: common                             # Role name
+    tasks_from: nodejs.yaml                  # Only include tasks from nodejs.yaml in this role
+  tags:
+  - deployment                               # Tag: deployment
+
+- name: copy mongo repo                       # Task description: copy MongoDB repo file
+  ansible.builtin.copy:                       # Use copy module
+    src: mongo.repo                           # Source file on control node
+    dest: /etc/yum.repos.d/mongo.repo        # Destination path on target node
+
+- name: install mongodb client                # Task: install MongoDB client
+  ansible.builtin.package:                    # Use package manager (yum/apt/etc.)
+    name: mongodb-mongosh                     # Package to install
+    state: present                            # Ensure the package is installed
+
+- name: connect to mongodb catalogue          # Task: check if 'catalogue' database exists
+  ansible.builtin.command:                    # Run arbitrary command on remote host
+    mongosh {{ MONGODB_HOST }} --quiet --eval "db.getMongo().getDBNames().indexOf('catalogue')"
+  register: catalogue_output                  # Save the output of the command in a variable
+
+- name: load products into mongodb            # Task: load initial data into MongoDB
+  ansible.builtin.shell:                      # Run shell command (supports redirection)
+    mongosh --host {{ MONGODB_HOST }} </app/db/master-data.js
+  when: catalogue_output.stdout | int < 0     # Only run if 'catalogue' DB does not exist
+
+- name: app setup
+  ansible.builtin.import_role:               # Import the 'common' role again
+    name: common                             # Role name
+    tasks_from: system-setup.yaml            # Use tasks from system-setup.yaml
+  tags:
+  - deployment                               # Tag: deployment

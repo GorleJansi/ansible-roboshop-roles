@@ -1,0 +1,14 @@
+- name: app setup
+  ansible.builtin.import_role:              # Import a role statically (evaluated when playbook is parsed)
+    name: common                            # Role name: 'common'
+    tasks_from: app-setup.yaml              # Only import tasks from 'app-setup.yaml'
+
+- name: app setup
+  ansible.builtin.import_role:              # Import the same 'common' role again
+    name: common
+    tasks_from: nodejs.yaml                 # Only import tasks from 'nodejs.yaml' (Node.js setup tasks)
+
+- name: system setup
+  ansible.builtin.import_role:              # Import 'common' role for system-level configuration
+    name: common
+    tasks_from: system-setup.yaml           # Only import tasks from 'system-setup.yaml'

@@ -1,0 +1,42 @@
+- name: disable default nginx                     # Task: Disable the default Nginx module on RHEL/CentOS 8+ systems
+  ansible.builtin.command: dnf module disable nginx -y   # Run shell command to disable the module (-y to auto-confirm)
+
+- name: enable nginx 1.24                          # Task: Enable a specific Nginx module version (1.24)
+  ansible.builtin.command: dnf module enable nginx:1.24 -y  # Enable Nginx 1.24 module
+
+- name: install nginx                              # Task: Install Nginx package
+  ansible.builtin.dnf:                             # Use the dnf module (similar to yum) to manage packages
+    name: nginx                                   # Package name
+    state: present                                # Ensure the package is installed
+
+- name: remove html directory                      # Task: Remove default html directory
+  ansible.builtin.file:                           # Use file module to manage files/directories
+    state: absent                                 # Remove the directory if it exists
+    path: /usr/share/nginx/html/                  # Path of the directory to remove
+
+- name: create html directory                      # Task: Recreate html directory
+  ansible.builtin.file:                           # Use file module
+    path: /usr/share/nginx/html/                  # Directory path
+    state: directory                              # Ensure it exists as a directory
+
+- name: download frontend application              # Task: Download the frontend application ZIP file
+  ansible.builtin.get_url:                        # Use get_url module to fetch files from HTTP/S
+    url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip  # Source URL
+    dest: /tmp/frontend.zip                        # Destination path on the target server
+
+- name: extract frontend application               # Task: Unzip the downloaded frontend archive
+  ansible.builtin.unarchive:                      # Use unarchive module to extract ZIP/TAR files
+    src: /tmp/frontend.zip                         # Source archive
+    dest: /usr/share/nginx/html/                  # Destination directory
+    remote_src: yes                               # The archive is already on the target machine
+
+- name: delete default nginx conf                  # Task: Remove default Nginx configuration file
+  ansible.builtin.file:
+    state: absent                                 # Remove the file
+    path: /etc/nginx/nginx.conf                   # Path of default Nginx config
+
+- name: copy nginx conf                             # Task: Copy custom Nginx configuration from template
+  ansible.builtin.template:                        # Use template module to copy Jinja2 template files
+    src: nginx.conf.j2                             # Source template file on Ansible control node
+    dest: /etc/nginx/nginx.conf                    # Destination on target server
+  notify: restart nginx                             # Trigger the handler 'restart nginx' after changes

@@ -1,0 +1,14 @@
+- name: app setup                                  # Task description: Perform application setup
+  ansible.builtin.import_role:                     # Use 'import_role' to include tasks from a role **statically** at parse time
+    name: common                                   # Name of the role to import tasks from (here, 'common' role)
+    tasks_from: app-setup.yaml                     # Specific tasks file in the 'tasks/' directory of the role to execute
+
+- name: app setup                                  # Another task description (can be renamed for clarity)
+  ansible.builtin.import_role:                     # Again, import tasks from a role
+    name: common                                   # Role name is still 'common'
+    tasks_from: nodejs.yaml                        # Executes NodeJS-related tasks defined in 'nodejs.yaml'
+
+- name: system setup                               # Task description: Perform system setup
+  ansible.builtin.import_role:                     # Import tasks from the role statically
+    name: common                                   # Role name: 'common'
+    tasks_from: system-setup.yaml                 # Executes system setup tasks defined in 'system-setup.yaml'

@@ -1,0 +1,22 @@
+- name: copy mongodb repo                     # Task description: Copy the MongoDB repository configuration file
+  ansible.builtin.copy:                        # Use the built-in Ansible 'copy' module
+    src: mongo.repo                            # Source file on the control machine (your Ansible host)
+    dest: /etc/yum.repos.d/mongo.repo         # Destination path on the target server
+
+- name: install mongodb server                # Task description: Install the MongoDB package
+  ansible.builtin.package:                     # Use the 'package' module (works for yum, apt, etc.)
+    name: mongodb-org                          # Package name to install
+    state: present                             # Ensure the package is installed (present). Does nothing if already installed.
+
+- name: allow remote connections              # Task description: Update MongoDB configuration to allow remote connections
+  ansible.builtin.replace:                     # Use the 'replace' module to modify a file
+    path: /etc/mongod.conf                     # Path of the file to edit
+    regexp: '127.0.0.1'                        # Regular expression to search for (default bind IP)
+    replace: '0.0.0.0'                         # Replace with 0.0.0.0 to allow connections from any IP
+
+- name: start and enable service              # Task description: Start MongoDB and ensure it runs on boot
+  ansible.builtin.service:                     # Use the 'service' module to manage system services
+    name: mongod                               # Name of the service to manage
+    state: started                             # Ensure the service is running
+    enabled: yes                               # Enable service to start automatically on boot
+

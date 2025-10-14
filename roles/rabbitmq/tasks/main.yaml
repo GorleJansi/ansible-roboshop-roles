@@ -1,0 +1,25 @@
+- name: copy rabbitmq repo                      # Task description: Copy the RabbitMQ repository file to the server
+  ansible.builtin.copy:                         # Use Ansible's copy module
+    src: rabbitmq.repo                           # Source repo file on the control machine
+    dest: /etc/yum.repos.d/rabbitmq.repo        # Destination path on the target server (Yum repository directory)
+
+- name: install rabbitmq server                 # Task description: Install RabbitMQ server package
+  ansible.builtin.package:                       # Use package module (works with yum/apt/etc.)
+    name: rabbitmq-server                        # Package name to install
+    state: present                               # Ensure the package is installed (does nothing if already installed)
+
+- name: start and enable rabbitmq server        # Task description: Start RabbitMQ and enable it to run on boot
+  ansible.builtin.service:                       # Use service module to manage system services
+    name: rabbitmq-server                        # Name of the service
+    state: started                               # Ensure the service is running
+    enabled: yes                                 # Enable the service to start automatically on system boot
+
+- name: create and provide permissions to user  # Task description: Add a user and assign permissions
+  community.rabbitmq.rabbitmq_user:             # Use the community RabbitMQ Ansible module
+    user: roboshop                               # Username to create
+    password: roboshop123                        # Password for the user
+    permissions:                                 # Define permissions for the user
+      - vhost: /                                 # Virtual host (root "/")
+        configure_priv: .*                        # Configure permission (regex) – allows creating exchanges, queues
+        read_priv: .*                             # Read permission – allows reading messages
+        write_priv: .*                            # Write perm*_

@@ -1,0 +1,33 @@
+- name: disable default redis                    # Task description: Disable the default Redis module
+  ansible.builtin.command: dnf module disable redis -y  
+                                                 # Runs the shell command to disable the system's default Redis module on RHEL/CentOS/Fedora
+                                                 # '-y' automatically confirms the action
+
+- name: enable redis 7                            # Task description: Enable Redis version 7 module
+  ansible.builtin.command: dnf module enable redis:7 -y
+                                                 # Runs the shell command to enable Redis 7 module for installation
+                                                 # '-y' automatically confirms the action
+
+- name: install redis                             # Task description: Install Redis package
+  ansible.builtin.package:                        # Use Ansible package module (works with dnf, yum, apt)
+    name: redis                                   # Package name to install
+    state: present                                # Ensure Redis is installed (no action if already present)
+
+- name: allow remote connections                  # Task description: Allow external connections to Redis
+  ansible.builtin.replace:                        # Use replace module to modify a file
+    path: /etc/redis/redis.conf                  # Path of Redis configuration file
+    regexp: '127.0.0.1'                           # Regex to find the bind IP
+    replace: '0.0.0.0'                            # Replace with 0.0.0.0 to allow connections from any IP
+
+- name: disable protected mode                    # Task description: Disable Redis protected mode
+  ansible.builtin.lineinfile:                     # Edit or insert a line in a file
+    path: /etc/redis/redis.conf                  # Path to configuration file
+    regexp: 'protected-mode'                      # Search for 'protected-mode' line
+    line: 'protected-mode no'                     # Replace line to disable protected mode
+
+- name: start and enable redis                    # Task description: Start Redis and enable it to start on boot
+  ansible.builtin.service:                        # Use service module to manage services
+    name: redis                                   # Service name
+    enabled: yes                                  # Enable service on boot
+    state: started                                # Start service immediately
+

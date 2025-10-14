@@ -1,0 +1,35 @@
+- name: app setup
+  ansible.builtin.import_role:              # Import a role statically (tasks loaded at parse time)
+    name: common                            # Role name: 'common'
+    tasks_from: app-setup.yaml              # Only import tasks from 'app-setup.yaml'
+
+- name: app setup
+  ansible.builtin.import_role:              # Import the 'common' role again
+    name: common
+    tasks_from: java.yaml                   # Only import tasks from 'java.yaml' (e.g., install Java)
+
+- name: install mysql python libraries      # Task description: install required Python libraries for MySQL
+  ansible.builtin.pip:                      # Use Ansible pip module to install Python packages
+    executable: pip3.9                       # Use specific pip executable (Python 3.9)
+    name: "{{ item }}"                        # Package name from loop variable
+  loop:                                       # Loop over list of packages
+  - cryptography
+  - PyMySQL
+
+- name: import shipping data into mysql      # Task: load SQL files into MySQL database
+  community.mysql.mysql_db:                   # Use community.mysql.mysql_db module
+    state: import                             # Import SQL file
+    name: all                                 # Database name (can be overridden in SQL)
+    login_host: "{{ MYSQL_HOST }}"            # MySQL host
+    login_user: "{{ MYSQL_ROOT_USER }}"       # MySQL user
+    login_password: "{{ MYSQL_ROOT_PASSWORD }}" # MySQL password
+    target: "{{ item }}"                       # SQL file to import
+  loop:                                        # Loop through SQL files
+  - /app/db/schema.sql
+  - /app/db/app-user.sql 
+  - /app/db/master-data.sql
+
+- name: system setup
+  ansible.builtin.import_role:               # Import common system setup tasks
+    name: common
+    tasks_from: system-setup.yaml           # Tasks from system-setup.yaml

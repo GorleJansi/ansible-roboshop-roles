@@ -1,0 +1,15 @@
+- name: install python package               # Task description: Install required Python packages via system package manager
+  ansible.builtin.dnf:                        # Use the 'dnf' module (for RHEL/CentOS 8+ or Fedora) to manage packages
+    name: "{{ item }}"                        # Package name to install (from loop)
+    state: present                            # Ensure the package is installed (do nothing if already present)
+  loop:                                       # Loop over a list of packages
+  - python3                                   # First package in the list
+  - gcc                                       # Second package (needed for compiling Python extensions)
+  - python3-devel                             # Third package (development headers for Python)
+
+- name: install dependencies                  # Task description: Install Python dependencies from requirements file
+  ansible.builtin.pip:                        # Use the 'pip' module to install Python packages
+    requirements: requirements.txt            # Path to the requirements file listing Python packages
+    executable: pip3.9                        # Use this specific pip executable (Python 3.9)
+  args:                                       # Additional arguments for the task
+    chdir: /app                               # Change directory to /app before running pip install
