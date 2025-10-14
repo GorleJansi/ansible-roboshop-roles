@@ -1,0 +1,10 @@
+
+MONGODB_HOST: mongodb.jansi1.site
+REDIS_HOST: redis.jansi1.site
+CATALOGUE_HOST: catalogue.jansi1.site
+CART_HOST: cart.jansi1.site
+USER_HOST: user.jansi1.site
+RABBITMQ_HOST: rabbitmq.jansi1.site
+MYSQL_HOST: mysql.jansi1.site
+SHIPPING_HOST: shipping.jansi1.site
+PAYMENT_HOST: payment.jansi1.site
