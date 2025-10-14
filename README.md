@@ -3,7 +3,7 @@
 This repository contains Ansible playbooks, roles, and supporting files for deploying and configuring various microservices and applications. It includes infrastructure setup using EC2, Route53 DNS records, application setup, and database initialization.
 
 ## Repository Structure
-
+```bash
 .
 ├── group_vars/             # Variables for Ansible playbooks
 ├── roles/                  # Reusable Ansible roles for each component
@@ -12,7 +12,7 @@ This repository contains Ansible playbooks, roles, and supporting files for depl
 ├── inventory.ini           # Inventory of hosts and groups
 ├── main.yaml               # Main playbook to run all tasks
 └── README.md               # Project documentation
-
+```
 ## Features
 
 - Provision EC2 instances dynamically using Ansible.
