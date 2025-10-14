@@ -1,4 +1,4 @@
-cat <<EOF > README.md
+
 # GorleJansi DevOps Practice Repository
 
 This repository contains Ansible playbooks, roles, and supporting files for deploying and configuring various microservices and applications. It includes infrastructure setup using EC2, Route53 DNS records, application setup, and database initialization.
