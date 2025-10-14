@@ -1,0 +1,69 @@
+- name: create ec2 and r53           # Playbook name/description
+  hosts: local                        # Run this playbook on the local machine, not remote hosts
+  connection: local                   # Use local connection (no SSH to remote hosts)
+  vars:                               # Variables used in this playbook
+    ami_id: ami-09c813fb71547fc4f    # The AMI ID for launching EC2 instances
+    sg_id: sg-07c8acf3fa6b923fa      # Security group ID for the EC2 instances
+    zone_id: "Z0948150OFPSYTNVYZOY"  # Route53 hosted zone ID
+    domain_name: "jansi1.site"       # Domain name to create DNS records for
+    # instances can be passed via command line using -e
+    # instances: 
+    # - mongodb
+    # - redis
+    # - mysql
+    # - rabbitmq
+
+  tasks:                              # List of tasks in this playbook
+  - name: create ec2 instance          # Task description
+    amazon.aws.ec2_instance:           # Use AWS EC2 module to create instances
+      name: "{{ item }}"               # Name tag for the instance (loop variable)
+      instance_type: t3.micro          # Instance type (size)
+      security_group: "{{ sg_id }}"    # Security group attached to instance
+      image_id: "{{ ami_id }}"         # AMI to use for the instance
+      tags:
+        Name: "{{ item }}"             # Additional tag: Name
+    loop: "{{ instances }}"            # Loop over all instances passed via variable
+    register: ec2_output               # Save output of EC2 creation for later use
+
+  # Debugging tasks (commented out)
+  # - name: print the ec2_output
+  #   ansible.builtin.debug:
+  #     msg: "{{ ec2_output }}"
+  # Print the whole output object for debugging
+
+  # - name: print public_ip
+  #   ansible.builtin.debug: 
+  #     msg: "{{ item.instances[0].public_ip_address }}"
+  #   loop: "{{ ec2_output.results }}"
+  # Print the public IP of each instance
+
+  # - name: print private_ip
+  #   ansible.builtin.debug: 
+  #     msg: "{{ item.instances[0].private_ip_address }}"
+  #   loop: "{{ ec2_output.results }}"
+  # Print the private IP of each instance
+
+  - name: create route53 record        # Task description
+    amazon.aws.route53:                # Use AWS Route53 module to manage DNS records
+      state: present                   # Ensure record exists
+      zone: "{{ domain_name }}"        # Hosted zone/domain name
+      record: "{{ item.item }}.{{ domain_name }}" # Full DNS record (e.g., mongodb.jansi1.site)
+      type: A                          # Record type: A (maps name to IP)
+      ttl: 1                           # Time-to-live (seconds) for the record
+      value: "{{ item.instances[0].private_ip_address }}" # IP address to assign
+      overwrite: true                  # Overwrite existing record if exists
+    loop: "{{ ec2_output.results }}"   # Loop over the results from EC2 creation
+
+  # Task for frontend public IP only
+  - name: create route53 record for frontend
+    amazon.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"
+      record: "{{ domain_name }}"       # Root domain (frontend) record
+      type: A
+      ttl: 1
+      value: "{{ item.instances[0].public_ip_address }}" # Use public IP
+      overwrite: true
+    when: item.item == "frontend"       # Only run for frontend instance
+    loop: "{{ ec2_output.results }}"    # Loop over EC2 results
+
