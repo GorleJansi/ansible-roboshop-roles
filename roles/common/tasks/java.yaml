@@ -1,0 +1,20 @@
+- name: install maven                       # Task description: Install required packages (Maven and MySQL)
+  ansible.builtin.dnf:                       # Use the DNF package manager (for RHEL/CentOS/Fedora) to manage packages
+    name: "{{ item }}"                       # Package name (from the loop variable)
+    state: present                           # Ensure the package is installed; does nothing if already installed
+  loop:                                      # Loop over a list of packages
+  - maven                                    # First package: Maven (used to build Java projects)
+  - mysql                                    # Second package: MySQL (client libraries, if needed)
+
+- name: install dependencies                  # Task description: Build the Java project using Maven
+  ansible.builtin.command:                   # Run an arbitrary command on the remote host
+    mvn clean package                         # Maven command: clean old builds and package the project
+  args:
+    chdir: /app                               # Change directory to /app before running the command
+
+- name: move jar file                         # Task description: Rename/move the generated JAR file
+  ansible.builtin.command:                   # Run a shell/command on the remote host
+    mv target/{{ component }}-{{ version }}.jar {{ component }}.jar  
+                                              # Move the generated JAR from target/ to current folder and rename to {{ component }}.jar
+  args:
+    chdir: /app                               # Run the command from /app directory

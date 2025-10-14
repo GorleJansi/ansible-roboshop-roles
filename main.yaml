@@ -1,0 +1,14 @@
+- name: "setup {{ component }} server"   # Human-readable description of the play. 
+                                         # The {{ component }} variable will be replaced with the actual microservice name at runtime.
+
+  hosts: "{{ component }}"               # Specifies the target hosts on which this play will run. 
+                                         # "{{ component }}" resolves to the inventory group or host name defined for that microservice.
+
+  become: yes                            # Enables privilege escalation (sudo). 
+                                         # Ensures tasks run with root permissions on the target hosts.
+
+  roles:
+  - "{{ component }}"                    # Assigns a role to this play. 
+                                         # The role name is dynamically taken from the 'component' variable. 
+                                         # Roles contain tasks, handlers, files, templates, and variables for setting up the component server.
+

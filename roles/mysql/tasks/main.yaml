@@ -1,0 +1,16 @@
+- name: install mysql server                   # Task description: Install the MySQL server package
+  ansible.builtin.package:                      # Use the built-in 'package' module (works with yum/apt/etc.)
+    name: mysql-server                          # Package name to install
+    state: present                              # Ensure the package is installed; does nothing if already installed
+
+- name: start and enable mysql                  # Task description: Start the MySQL service and enable it to start on boot
+  ansible.builtin.service:                      # Use the built-in 'service' module
+    name: mysqld                                # Name of the service to manage
+    state: started                              # Ensure the service is running
+    enabled: yes                                # Ensure the service starts automatically on system boot
+
+- name: setup root password                     # Task description: Set the MySQL root password securely
+  ansible.builtin.command:                      # Run an arbitrary command on the target host
+    mysql_secure_installation --set-root-pass {{ MYSQL_ROOT_PASSWORD }}  
+                                                # Command executed: sets the root password using the variable MYSQL_ROOT_PASSWORD
+
