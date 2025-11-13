@@ -5,7 +5,7 @@ Description=Shipping Service
 [Service]
 User=roboshop
 // highlight-start
-Environment=CART_ENDPOINT={{ CART_HOST }}:8080
+Environment=CART_ENDPOINT={{ CART_HOST }}:80    # backend alb listener on 80 port ; shipping connects backend alb then b-alb will connect cart 
 Environment=DB_HOST={{ MYSQL_HOST }}
 // highlight-end
 ExecStart=/bin/java -jar /app/shipping.jar
